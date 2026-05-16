@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Demo</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Supabase Berechnungs-Tool</title>
+  <!-- Supabase JS Library von CDN laden -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Excel-Logik online: Berechnungsdaten</h2>
+
+    <!-- Formular für neue Daten -->
+    <form id="calcForm">
+      <div class="form-group">
+        <label for="projektName">Projektname:</label>
+        <input type="text" id="projektName" required placeholder="z.B. Projekt Alpha">
+      </div>
+      <div class="form-group">
+        <label for="wertA">Wert A (z.B. Menge):</label>
+        <input type="number" id="wertA" required placeholder="10">
+      </div>
+      <div class="form-group">
+        <label for="wertB">Wert B (z.B. Preis):</label>
+        <input type="number" id="wertB" required placeholder="5">
+      </div>
+      <button type="submit">Berechnen & Speichern</button>
+    </form>
+
+    <hr>
+
+    <!-- Tabelle zum Auslesen der Daten -->
+    <h3>Gespeicherte Daten (aus Supabase)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Projekt</th>
+          <th>Wert A</th>
+          <th>Wert B</th>
+          <th>Ergebnis (A * B)</th>
+        </tr>
+      </thead>
+      <tbody id="datenTabelle">
+        <!-- Hier fügt JS die Zeilen dynamisch ein -->
+      </tbody>
+    </table>
+  </div>
+
+</body>
+</html>
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>
