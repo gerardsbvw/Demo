@@ -1,54 +1,122 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Objektstammdaten</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <header class="app-header admin">
+        <h1>⚙️ Admin-Bereich</h1>
+        <p>Immobilien-Datenbank verwalten (Stammdaten)</p>
+    </header>
 
-<header class="app-header admin" style="background-color: #333333;">
-    <h1>⚙️ Admin-Bereich</h1>
-    <p>Immobilien verwalten</p>
-</header>
+    <main class="container">
+        <section class="card">
+            <h2>Neue Immobilie anlegen</h2>
+            <form id="adminForm">
+                <div class="input-group">
+                    <label>Einheit Name (z.B. 039-B1-1)</label>
+                    <input type="text" id="adminEinheit" required placeholder="z.B. 042-B1-1">
+                </div>
+                <div class="grid-2-col">
+                    <div class="input-group">
+                        <label>Gesamtfläche (m²)</label>
+                        <input type="number" id="adminFlaeche" step="0.01" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Kaufpreis (€)</label>
+                        <input type="number" id="adminKaufpreis" step="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Sanierungsanteil (%)</label>
+                        <input type="number" id="adminSanierungPz" step="0.1" value="75">
+                    </div>
+                    <div class="input-group">
+                        <label>Kaltmiete (€ / m²)</label>
+                        <input type="number" id="adminMieteQm" step="0.01" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">In Cloud-Datenbank speichern</button>
+            </form>
+        </section>
 
-<main class="container">
-    <section class="card">
-        <h2>Neue Immobilie anlegen</h2>
-        <form id="adminForm">
-            <div class="input-group">
-                <label>Einheit Name (z.B. 039-B1-1)</label>
-                <input type="text" id="adminEinheit" required>
+        <section class="card">
+            <h2>Aktueller Datenbank-Bestand</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Einheit</th>
+                            <th>Fläche</th>
+                            <th>Kaufpreis</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTabelleBody"></tbody>
+                </table>
             </div>
-            <div class="grid-2-col">
-                <div class="input-group">
-                    <label>Gesamtfläche (m²)</label>
-                    <input type="number" id="adminFlaeche" step="0.01" required>
-                </div>
-                <div class="input-group">
-                    <label>Kaufpreis (€)</label>
-                    <input type="number" id="adminKaufpreis" step="1" required>
-                </div>
-                <div class="input-group">
-                    <label>Sanierungsanteil (%)</label>
-                    <input type="number" id="adminSanierungPz" step="0.1" value="75">
-                </div>
-                <div class="input-group">
-                    <label>Kaltmiete (€ / m²)</label>
-                    <input type="number" id="adminMieteQm" step="0.1" required>
-                </div>
-            </div>
-            <button type="submit" class="btn-primary">In Datenbank speichern</button>
-        </form>
-    </section>
+        </section>
+    </main>
 
-    <section class="card">
-        <h2>Datenbank-Bestand</h2>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Einheit</th>
-                        <th>Fläche</th>
-                        <th>Kaufpreis</th>
-                        <th>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTabelleBody"></tbody>
-            </table>
-        </div>
-    </section>
-</main>
+    <script>
+        const SUPABASE_URL = "https://xdnmaqjqufeelrjbheky.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_t1w477Z6EHsGWpWZEJfY0Q_xzx4KOXN";
+        const adminSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const adminFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+
+        async function ladeAdminObjekte() {
+            const { data, error } = await adminSupabase.from('admin_objektstammdaten').select('*').order('einheit_name');
+            const tbody = document.getElementById('adminTabelleBody');
+            tbody.innerHTML = "";
+            if(data) {
+                data.forEach(obj => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${obj.einheit_name}</strong></td>
+                            <td>${obj.gesamtflaeche_qm} m²</td>
+                            <td>${adminFormatter.format(obj.kaufpreis_einheit)}</td>
+                            <td><button onclick="loescheObjekt('${obj.id}')" style="background:none; color:#d9534f; font-size:1rem; padding:0; height:auto; width:auto; text-decoration:underline;">Löschen</button></td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        document.getElementById('adminForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.submitter;
+            btn.disabled = true;
+
+            const neuesObjekt = {
+                einheit_name: document.getElementById('adminEinheit').value,
+                gesamtflaeche_qm: parseFloat(document.getElementById('adminFlaeche').value),
+                kaufpreis_einheit: parseFloat(document.getElementById('adminKaufpreis').value),
+                anteil_sanierung_pz: parseFloat(document.getElementById('adminSanierungPz').value),
+                miete_kalt_qm: parseFloat(document.getElementById('adminMieteQm').value)
+            };
+
+            const { error } = await adminSupabase.from('admin_objektstammdaten').insert([neuesObjekt]);
+            if(error) {
+                alert("Fehler beim Speichern: " + error.message);
+            } else {
+                document.getElementById('adminForm').reset();
+                ladeAdminObjekte();
+            }
+            btn.disabled = false;
+        });
+
+        window.loescheObjekt = async function(id) {
+            if(confirm("Möchtest du diese Immobilie wirklich unwiderruflich aus den Stammdaten löschen?")) {
+                await adminSupabase.from('admin_objektstammdaten').delete().eq('id', id);
+                ladeAdminObjekte();
+            }
+        };
+
+        // Direkt laden
+        ladeAdminObjekte();
+    </script>
+</body>
+</html>

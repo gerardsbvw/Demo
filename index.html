@@ -1,100 +1,113 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immobilien-Kalkulator</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
 
-<header class="app-header">
-    <h1>Immobilien-Kalkulator</h1>
-    <p>Live Kalkulation & Szenario-Planung</p>
-</header>
+    <header class="app-header">
+        <h1>Immobilien-Kalkulator</h1>
+        <p>Live Kalkulation & Szenario-Planung</p>
+    </header>
 
-<main class="container">
-    
-    <section class="card highlight-card">
-        <h2>📊 Live-Ergebnis</h2>
-        <div class="live-result">
-            <p>Kaufpreis inkl. NK: <strong id="liveKaufpreisNK">0 €</strong></p>
-            <p>Benötigtes Fremdkapital: <strong id="liveFremdkapital">0 €</strong></p>
-            <p>Liquiditätsüberschuss (Jahr 1): <strong id="liveCashflow">0 €</strong></p>
-        </div>
-        <button type="button" class="btn-secondary" id="btnSaveScenario">Szenario dauerhaft speichern</button>
-    </section>
-
-    <form id="calcForm">
+    <main class="container">
         
-        <section class="card">
-            <h2>1. Immobilie auswählen</h2>
-            <div class="input-group">
-                <label for="objektAuswahl">Vorhandene Objekte laden (Auto-Fill)</label>
-                <select id="objektAuswahl">
-                    <option value="">-- Bitte wählen --</option>
-                </select>
+        <section class="card highlight-card">
+            <h2>📊 Live-Ergebnis (Echtzeit)</h2>
+            <div class="live-result">
+                <p>Kaufpreis inkl. NK: <strong id="liveKaufpreisNK">0 €</strong></p>
+                <p>Benötigtes Fremdkapital: <strong id="liveFremdkapital">0 €</strong></p>
+                <p>Liquiditätsüberschuss (Jahr 1): <strong id="liveCashflow">0 €</strong></p>
             </div>
+            <button type="button" class="btn-secondary" id="btnSaveScenario">Szenario dauerhaft speichern</button>
+        </section>
+
+        <form id="calcForm">
             
-            <div class="grid-2-col">
+            <section class="card">
+                <h2>1. Immobilie auswählen</h2>
                 <div class="input-group">
-                    <label for="projektName">Einheit Name</label>
-                    <input type="text" id="projektName" required>
+                    <label for="objektAuswahl">Vorhandene Objekte laden (Auto-Fill)</label>
+                    <select id="objektAuswahl">
+                        <option value="">-- Bitte wählen --</option>
+                    </select>
                 </div>
-                <div class="input-group">
-                    <label for="kaufpreis">Kaufpreis (€)</label>
-                    <input type="number" id="kaufpreis" step="1" required>
+                
+                <div class="grid-2-col">
+                    <div class="input-group">
+                        <label for="projektName">Einheit Name</label>
+                        <input type="text" id="projektName" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="kaufpreis">Kaufpreis (€)</label>
+                        <input type="number" id="kaufpreis" step="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="sanierungsanteil">Sanierungsanteil (%)</label>
+                        <input type="number" id="sanierungsanteil" step="0.1" value="75">
+                    </div>
+                    <div class="input-group">
+                        <label for="eigenkapital">Eigenkapital-Einsatz (€)</label>
+                        <input type="number" id="eigenkapital" step="1" value="20000">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="sanierungsanteil">Sanierungsanteil (%)</label>
-                    <input type="number" id="sanierungsanteil" step="0.1">
+            </section>
+
+            <section class="card">
+                <h2>2. Einkommen & Steuern</h2>
+                <div class="grid-2-col">
+                    <div class="input-group">
+                        <label for="zve">ZVE p.a. (€)</label>
+                        <input type="number" id="zve" step="1" value="100000">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="eigenkapital">Eigenkapital-Einsatz (€)</label>
-                    <input type="number" id="eigenkapital" step="1" value="20000">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="splitting" checked>
+                    <label for="splitting">Zusammenveranlagung (Splitting)</label>
                 </div>
-            </div>
-        </section>
+            </section>
+
+            <section class="card">
+                <h2>3. Finanzierung (Darlehen 1)</h2>
+                <div class="grid-2-col">
+                    <div class="input-group">
+                        <label for="d1Kredit">Kredithöhe (€) *</label>
+                        <input type="number" id="d1Kredit" step="1" readonly style="background-color: #e9ecef;">
+                        <small style="color: #666;">Wird automatisch berechnet</small>
+                    </div>
+                    <div class="input-group">
+                        <label for="d1Zins">Nominalzins (%)</label>
+                        <input type="number" id="d1Zins" step="0.01" value="3.90">
+                    </div>
+                    <div class="input-group">
+                        <label for="d1Tilgung">Anf. Tilgung (%)</label>
+                        <input type="number" id="d1Tilgung" step="0.1" value="1.5">
+                    </div>
+                </div>
+            </section>
+        </form>
 
         <section class="card">
-            <h2>2. Einkommen & Steuern</h2>
-            <div class="grid-2-col">
-                <div class="input-group">
-                    <label for="zve">ZVE p.a. (€)</label>
-                    <input type="number" id="zve" step="1" value="100000">
-                </div>
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="splitting" checked>
-                <label for="splitting">Zusammenveranlagung (Splitting)</label>
-            </div>
-        </section>
-
-        <section class="card">
-            <h2>3. Finanzierung (Darlehen 1)</h2>
-            <div class="grid-2-col">
-                <div class="input-group">
-                    <label for="d1Kredit">Kredithöhe (€) *</label>
-                    <input type="number" id="d1Kredit" step="1" readonly style="background-color: #e9ecef;">
-                    <small>Wird automatisch berechnet</small>
-                </div>
-                <div class="input-group">
-                    <label for="d1Zins">Nominalzins (%)</label>
-                    <input type="number" id="d1Zins" step="0.01" value="3.90">
-                </div>
-                <div class="input-group">
-                    <label for="d1Tilgung">Anf. Tilgung (%)</label>
-                    <input type="number" id="d1Tilgung" step="0.1" value="1.5">
-                </div>
+            <h2>Historie: Gespeicherte Szenarien</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Projekt</th>
+                            <th>Fremdkapital</th>
+                            <th>Cashflow (J1)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabellenBody"></tbody>
+                </table>
             </div>
         </section>
-    </form>
+    </main>
 
-    <section class="card">
-        <h2>Historie: Gespeicherte Szenarien</h2>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Projekt</th>
-                        <th>Fremdkapital</th>
-                        <th>Cashflow (J1)</th>
-                    </tr>
-                </thead>
-                <tbody id="tabellenBody"></tbody>
-            </table>
-        </div>
-    </section>
-</main>
+    <script src="script.js"></script>
+</body>
+</html>
