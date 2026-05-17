@@ -20,7 +20,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-main);
-    font-size: 18px; /* Ideal für 50+ */
+    font-size: 18px; /* Ideal für Generation 50+ */
     line-height: 1.6;
     padding-bottom: 50px;
 }
@@ -75,6 +75,12 @@ body {
     gap: 15px;
 }
 
+@media(max-width: 600px) {
+    .grid-2-col {
+        grid-template-columns: 1fr;
+    }
+}
+
 label {
     display: block;
     font-weight: 600;
@@ -90,7 +96,7 @@ select {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     background-color: #fafafa;
-    min-height: 48px; /* Touch-freundlich */
+    min-height: 48px; /* Große Touch-Fläche */
 }
 
 input:focus, select:focus {
@@ -130,15 +136,19 @@ button {
 
 button:active { transform: translateY(2px); }
 
-/* Live Ergebnis Styling */
 .live-result {
     font-size: 1.2rem;
     margin-bottom: 20px;
 }
-.live-result p { margin-bottom: 10px; display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; padding-bottom: 5px;}
+.live-result p { 
+    margin-bottom: 10px; 
+    display: flex; 
+    justify-content: space-between; 
+    border-bottom: 1px solid #ddd; 
+    padding-bottom: 5px;
+}
 .live-result strong { font-size: 1.4rem; }
 
-/* Tabellen */
 .table-responsive { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
