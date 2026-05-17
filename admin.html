@@ -1,0 +1,54 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<header class="app-header admin" style="background-color: #333333;">
+    <h1>⚙️ Admin-Bereich</h1>
+    <p>Immobilien verwalten</p>
+</header>
+
+<main class="container">
+    <section class="card">
+        <h2>Neue Immobilie anlegen</h2>
+        <form id="adminForm">
+            <div class="input-group">
+                <label>Einheit Name (z.B. 039-B1-1)</label>
+                <input type="text" id="adminEinheit" required>
+            </div>
+            <div class="grid-2-col">
+                <div class="input-group">
+                    <label>Gesamtfläche (m²)</label>
+                    <input type="number" id="adminFlaeche" step="0.01" required>
+                </div>
+                <div class="input-group">
+                    <label>Kaufpreis (€)</label>
+                    <input type="number" id="adminKaufpreis" step="1" required>
+                </div>
+                <div class="input-group">
+                    <label>Sanierungsanteil (%)</label>
+                    <input type="number" id="adminSanierungPz" step="0.1" value="75">
+                </div>
+                <div class="input-group">
+                    <label>Kaltmiete (€ / m²)</label>
+                    <input type="number" id="adminMieteQm" step="0.1" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">In Datenbank speichern</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Datenbank-Bestand</h2>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Einheit</th>
+                        <th>Fläche</th>
+                        <th>Kaufpreis</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTabelleBody"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
