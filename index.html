@@ -3,111 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Immobilien-Kalkulator</title>
+    <title>Immobilien-Kalkulator Pro</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
-    <header class="app-header">
-        <h1>Immobilien-Kalkulator</h1>
-        <p>Live Kalkulation & Szenario-Planung</p>
-    </header>
-
-    <main class="container">
-        
-        <section class="card highlight-card">
-            <h2>📊 Live-Ergebnis (Echtzeit)</h2>
-            <div class="live-result">
-                <p>Kaufpreis inkl. NK: <strong id="liveKaufpreisNK">0 €</strong></p>
-                <p>Benötigtes Fremdkapital: <strong id="liveFremdkapital">0 €</strong></p>
-                <p>Liquiditätsüberschuss (Jahr 1): <strong id="liveCashflow">0 €</strong></p>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>ImmoKalkulator</h2>
+                <p>Enterprise Edition</p>
             </div>
-            <button type="button" class="btn-secondary" id="btnSaveScenario">Szenario dauerhaft speichern</button>
-        </section>
+            <nav class="sidebar-nav">
+                <button type="button" class="nav-btn active" data-target="view-berechnung"><span class="icon">📈</span> Neue Berechnung</button>
+                <button type="button" class="nav-btn" data-target="view-kunden"><span class="icon">👥</span> Kunden-Datenbank</button>
+                <button type="button" class="nav-btn" data-target="view-objekte"><span class="icon">🏢</span> Objekt-Datenbank</button>
+            </nav>
+        </aside>
 
-        <form id="calcForm">
+        <main class="main-content">
             
-            <section class="card">
-                <h2>1. Immobilie auswählen</h2>
-                <div class="input-group">
-                    <label for="objektAuswahl">Vorhandene Objekte laden (Auto-Fill)</label>
-                    <select id="objektAuswahl">
-                        <option value="">-- Bitte wählen --</option>
-                    </select>
-                </div>
-                
-                <div class="grid-2-col">
-                    <div class="input-group">
-                        <label for="projektName">Einheit Name</label>
-                        <input type="text" id="projektName" required>
+            <div id="view-berechnung" class="view-section active">
+                <section class="card" style="padding: 0; overflow: hidden;">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="tab-objekt">1. Objekt auswählen</button>
+                        <button class="tab-btn" data-tab="tab-kunde">2. Kunde auswählen</button>
+                        <button class="tab-btn" data-tab="tab-finanzierung">3. Finanzierung</button>
                     </div>
-                    <div class="input-group">
-                        <label for="kaufpreis">Kaufpreis (€)</label>
-                        <input type="number" id="kaufpreis" step="1" required>
-                    </div>
-                    <div class="input-group">
-                        <label for="sanierungsanteil">Sanierungsanteil (%)</label>
-                        <input type="number" id="sanierungsanteil" step="0.1" value="75">
-                    </div>
-                    <div class="input-group">
-                        <label for="eigenkapital">Eigenkapital-Einsatz (€)</label>
-                        <input type="number" id="eigenkapital" step="1" value="20000">
-                    </div>
-                </div>
-            </section>
 
-            <section class="card">
-                <h2>2. Einkommen & Steuern</h2>
-                <div class="grid-2-col">
-                    <div class="input-group">
-                        <label for="zve">ZVE p.a. (€)</label>
-                        <input type="number" id="zve" step="1" value="100000">
-                    </div>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="splitting" checked>
-                    <label for="splitting">Zusammenveranlagung (Splitting)</label>
-                </div>
-            </section>
+                    <div class="tab-content-container" style="padding: 24px;">
+                        
+                        <div id="tab-objekt" class="tab-content active">
+                            <div class="input-group" style="background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #ddd;">
+                                <label style="color:var(--primary-color);">Pflichtfeld: Stammdatum laden</label>
+                                <select id="calcObjektSelect"><option value="">-- Objekt aus Datenbank wählen --</option></select>
+                            </div>
+                            
+                            <div id="objektDetailsForm" style="display:none; margin-top: 20px;">
+                                <div id="objektWarnung" class="deviation-warning">⚠️ Achtung: Werte weichen von den Stammdaten ab. Dies ist eine individuelle Szenario-Anpassung.</div>
+                                <div class="grid-3-col">
+                                    <div class="input-group"><label>Einheit / Name</label><input type="text" id="calcObjName" class="stammdaten-feld" data-field="name"></div>
+                                    <div class="input-group"><label>Kaufpreis (€)</label><input type="number" id="calcObjKp" class="stammdaten-feld" data-field="kp" step="1"></div>
+                                    <div class="input-group"><label>Fläche (m²)</label><input type="number" id="calcObjFlaeche" class="stammdaten-feld" data-field="flaeche" step="0.1"></div>
+                                    <div class="input-group"><label>Soll-Miete (€/m²)</label><input type="number" id="calcObjMiete" class="stammdaten-feld" data-field="miete" step="0.01"></div>
+                                </div>
+                                <hr style="margin:20px 0; border-top:1px solid #eee;">
+                                <div class="grid-3-col">
+                                    <div class="input-group"><label>Sanierung (%)</label><input type="number" id="calcObjSanierung" class="stammdaten-feld" data-field="san" step="0.1"></div>
+                                    <div class="input-group"><label>Altsubstanz (%)</label><input type="number" id="calcObjAlt" class="stammdaten-feld" data-field="alt" step="0.1"></div>
+                                    <div class="input-group"><label>Bodenanteil (%) 🔒</label><input type="number" id="calcObjBoden" readonly class="readonly-field"></div>
+                                </div>
+                                <button class="btn-primary" style="margin-top:20px;" onclick="document.querySelector('[data-tab=\'tab-kunde\']').click()">Weiter zu Schritt 2: Kunde ➔</button>
+                            </div>
+                        </div>
 
-            <section class="card">
-                <h2>3. Finanzierung (Darlehen 1)</h2>
-                <div class="grid-2-col">
-                    <div class="input-group">
-                        <label for="d1Kredit">Kredithöhe (€) *</label>
-                        <input type="number" id="d1Kredit" step="1" readonly style="background-color: #e9ecef;">
-                        <small style="color: #666;">Wird automatisch berechnet</small>
-                    </div>
-                    <div class="input-group">
-                        <label for="d1Zins">Nominalzins (%)</label>
-                        <input type="number" id="d1Zins" step="0.01" value="3.90">
-                    </div>
-                    <div class="input-group">
-                        <label for="d1Tilgung">Anf. Tilgung (%)</label>
-                        <input type="number" id="d1Tilgung" step="0.1" value="1.5">
-                    </div>
-                </div>
-            </section>
-        </form>
+                        <div id="tab-kunde" class="tab-content">
+                            <div class="input-group" style="background:#f9f9f9; padding:15px; border-radius:8px; border:1px solid #ddd;">
+                                <label style="color:var(--primary-color);">Pflichtfeld: Kunde laden</label>
+                                <select id="calcKundeSelect"><option value="">-- Kunden aus Datenbank wählen --</option></select>
+                            </div>
+                            
+                            <div id="kundeDetailsForm" style="display:none; margin-top: 20px;">
+                                <div id="kundeWarnung" class="deviation-warning">⚠️ Achtung: Werte weichen von den Stammdaten ab.</div>
+                                <div class="input-group">
+                                    <label>Kundenname 🔒</label>
+                                    <input type="text" id="calcKundeName" readonly class="readonly-field">
+                                </div>
+                                <div class="grid-3-col">
+                                    <div class="input-group"><label>ZVE p.a. (€)</label><input type="number" id="calcKundeZve" class="kunden-feld" data-field="zve" step="1"></div>
+                                    <div class="input-group"><label>Bundesland</label>
+                                        <select id="calcKundeBl" class="kunden-feld" data-field="bl">
+                                            <option value="BW">Baden-Württemberg</option><option value="BY">Bayern</option><option value="BE">Berlin</option>
+                                            <option value="BB">Brandenburg</option><option value="HB">Bremen</option><option value="HH">Hamburg</option>
+                                            <option value="HE">Hessen</option><option value="MV">Mecklenburg-Vorpommern</option><option value="NI">Niedersachsen</option>
+                                            <option value="NRW">Nordrhein-Westfalen</option><option value="RP">Rheinland-Pfalz</option><option value="SL">Saarland</option>
+                                            <option value="SN">Sachsen</option><option value="ST">Sachsen-Anhalt</option><option value="SH">Schleswig-Holstein</option>
+                                            <option value="TH">Thüringen</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group"><label>Kirchensteuer (%)</label>
+                                        <select id="calcKundeKirche" class="kunden-feld" data-field="kirche">
+                                            <option value="0">Keine Mitgliedschaft (0%)</option><option value="8">8% (BW, BY)</option><option value="9">9% (Restl. Bundesländer)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="checkbox-group" style="margin-top: 15px;">
+                                    <input type="checkbox" id="calcKundeSplit" class="kunden-feld" data-field="split">
+                                    <label>Zusammenveranlagung (Splitting-Tarif)</label>
+                                </div>
+                                <button class="btn-primary" style="margin-top:20px;" onclick="document.querySelector('[data-tab=\'tab-finanzierung\']').click()">Weiter zu Schritt 3: Finanzierung ➔</button>
+                            </div>
+                        </div>
 
-        <section class="card">
-            <h2>Historie: Gespeicherte Szenarien</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Projekt</th>
-                            <th>Fremdkapital</th>
-                            <th>Cashflow (J1)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabellenBody"></tbody>
-                </table>
+                        <div id="tab-finanzierung" class="tab-content">
+                            <div class="zins-kpi-box">
+                                <span style="font-size:0.9rem; text-transform:uppercase; letter-spacing:1px;">Gewichteter Durchschnittszins (Jahre 1-10)</span>
+                                <h3 id="avgZinsOutput">0,00 %</h3>
+                            </div>
+
+                            <div style="background:#fdfbf7; padding:20px; border-radius:8px; border:1px solid #ddd; margin-bottom:20px; display:flex; gap:20px; align-items:center;">
+                                <div class="input-group" style="margin:0; flex:1;">
+                                    <label>Eigenkapital-Einsatz (€)</label>
+                                    <input type="number" id="calcEk" step="1" style="font-size:1.2rem; font-weight:bold; color:var(--primary-color);">
+                                </div>
+                                <div style="flex:1; font-size:0.9rem; color:#666;">
+                                    <strong>Info:</strong> Das Eigenkapital wurde standardmäßig auf die Höhe der Kaufnebenkosten (Notar + GrESt) gesetzt.
+                                </div>
+                            </div>
+                            
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <h3 style="color:var(--primary-color); margin:0;">Darlehens-Bausteine</h3>
+                                <button type="button" class="btn-secondary" id="btnAddLoan" style="width:auto; padding:10px 20px; border-radius:30px;">➕ Weiteres Darlehen hinzufügen</button>
+                            </div>
+
+                            <div id="darlehenContainer" class="darlehen-container">
+                                </div>
+                        </div>
+                    </div>
+                </section>
             </div>
-        </section>
-    </main>
 
-    <script src="script.js"></script>
+            <div id="view-kunden" class="view-section">
+                <section class="card">
+                    <h2>👥 Neuen Kunden anlegen</h2>
+                    <form id="kundenForm">
+                        <div class="grid-3-col">
+                            <div class="input-group"><label>Name</label><input type="text" id="dbKundeName" required></div>
+                            <div class="input-group"><label>ZVE p.a. (€)</label><input type="number" id="dbKundeZve" step="1" value="100000"></div>
+                            <div class="input-group"><label>Bundesland</label>
+                                <select id="dbKundeBl">
+                                    <option value="BW">Baden-Württemberg</option><option value="BY">Bayern</option><option value="BE">Berlin</option>
+                                    <option value="BB">Brandenburg</option><option value="HB">Bremen</option><option value="HH">Hamburg</option>
+                                    <option value="HE">Hessen</option><option value="MV">Mecklenburg-Vorpommern</option><option value="NI">Niedersachsen</option>
+                                    <option value="NRW" selected>Nordrhein-Westfalen</option><option value="RP">Rheinland-Pfalz</option><option value="SL">Saarland</option>
+                                    <option value="SN">Sachsen</option><option value="ST">Sachsen-Anhalt</option><option value="SH">Schleswig-Holstein</option>
+                                    <option value="TH">Thüringen</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid-2-col" style="margin-top:10px;">
+                            <div class="input-group"><label>Kirchensteuer</label>
+                                <select id="dbKundeKirche">
+                                    <option value="0">Keine (0%)</option><option value="8">8%</option><option value="9" selected>9%</option>
+                                </select>
+                            </div>
+                            <div class="checkbox-group" style="align-self:center;">
+                                <input type="checkbox" id="dbKundeSplit" checked><label>Splitting (Zusammenveranlagung)</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="margin-top:15px;">Kunde in Datenbank speichern</button>
+                    </form>
+                </section>
+                <section class="card">
+                    <h2>Kunden-Verzeichnis</h2>
+                    <table class="data-table">
+                        <thead><tr><th>Name</th><th>ZVE p.a.</th><th>Bundesland</th><th>Aktion</th></tr></thead>
+                        <tbody id="kundenTabelleBody"></tbody>
+                    </table>
+                </section>
+            </div>
+
+            <div id="view-objekte" class="view-section">
+                <section class="card">
+                    <h2>⚙️ Neue Immobilie anlegen</h2>
+                    <form id="adminForm">
+                        <div class="grid-2-col">
+                            <div class="input-group"><label>Einheit Name</label><input type="text" id="adminEinheit" required></div>
+                            <div class="input-group"><label>Kaufpreis (€)</label><input type="number" id="adminKaufpreis" step="1" required></div>
+                            <div class="input-group"><label>Fläche (m²)</label><input type="number" id="adminFlaeche" step="0.01" required></div>
+                            <div class="input-group"><label>Kaltmiete (€/m²)</label><input type="number" id="adminMieteQm" step="0.01" required></div>
+                            <div class="input-group"><label>Sanierung (%)</label><input type="number" id="adminSanierungPz" step="0.1" value="70"></div>
+                            <div class="input-group"><label>Altsubstanz (%)</label><input type="number" id="adminAltsubstanzPz" step="0.1" value="20"></div>
+                        </div>
+                        <button type="submit" class="btn-primary" style="margin-top: 15px;">Objekt sichern</button>
+                    </form>
+                </section>
+                <section class="card">
+                    <h2>Objekt-Bestand</h2>
+                    <table class="data-table">
+                        <thead><tr><th>Einheit</th><th>Kaufpreis</th><th>Aktion</th></tr></thead>
+                        <tbody id="adminTabelleBody"></tbody>
+                    </table>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-client.js"></script>
+    <script src="math-logic.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
